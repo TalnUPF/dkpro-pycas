@@ -91,12 +91,12 @@ class CAS(object):
         self.__idArray.append(self.__idCounter)        
         return self.__idCounter
     "creates and returns document annotation or FS"
-    def createDocumentAnnotation(self,typeName,length,featureDict,FSid=-1):
+    def createDocumentAnnotation(self,typeName,length,featureDict,FSid=-1, id=None):
         featureDict['begin'] = 0
         featureDict['end'] = length
         if(not featureDict['language'] == None):
             self.__documentLanguage = featureDict['language']
-        self.__DocumentFS= self.createAnnotation(typeName, featureDict,FSid)
+        self.__DocumentFS= self.createAnnotation(typeName, featureDict,FSid,id=id)
         return self.__DocumentFS
     "returns document FS"
     def getDocumentAnnotation(self):
@@ -108,12 +108,9 @@ class CAS(object):
         featureDict: dictionary of name-value pair of features
         FSid : id of feature structure, optional, if not given automatic id is given  
     '''
-    def createAnnotation(self, typeName, featureDict,FSid=-1):
+    def createAnnotation(self, typeName, featureDict,FSid=-1, id=None):
         fsAnnotationType = self.typesystem.getType(typeName)
-        if 'id' in featureDict:
-            fsid = self.__getCounter(FSid,featureDict['id'])
-        else:
-            fsid = self.__getCounter(FSid,None)
+        fsid = self.__getCounter(FSid, id)
         annotationFs = Annotation(fsAnnotationType,fsid,self.typesystem)
         annotationFs.CAS = self        
         annotationFs.sofa = self.sofaFS

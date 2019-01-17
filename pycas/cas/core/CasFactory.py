@@ -55,6 +55,9 @@ class CasFactory(object):
         return self.__build(cas, casXmiParser)
 
     def __build(self,cas,casXmiParser):
+
+        xmi_namespace = "http://www.omg.org/XMI"
+
         #get xmi root element as string
         rootstr=casXmiParser.getRootElementAsString()
         #get cas sofa element
@@ -93,8 +96,15 @@ class CasFactory(object):
                 # list to hold the attributes and values those refer to other FS
                 referenceList = {}
                 for k in casXmiParser.getChildAttributesAsDict(fs):
-                    if(casXmiParser.getLocalname(k) == 'id'):
-                        featureDict[casXmiParser.getLocalname(k)] = int(casXmiParser.getChildAttributesAsDict(fs).get(k))
+
+                    attrName = casXmiParser.getLocalname(k)
+                    # get the attribute value
+                    attrValue = casXmiParser.getChildAttributesAsDict(fs).get(k)
+                    namespace = casXmiParser.getNamespace(k)
+
+                    if namespace == xmi_namespace and attrName == 'id':
+                        annotation_id = int(attrValue)
+
                     #add sofa attribute
                     elif(casXmiParser.getLocalname(k) == 'sofa'):
                         featureDict[casXmiParser.getLocalname(k)] = cas.sofaFS
@@ -154,10 +164,11 @@ class CasFactory(object):
                                 referenceList[casXmiParser.getLocalname(k)] = value
                 #if the element's super type is TOP in type system create a TOP FS, otherwise create a Annotation FS                
                 if not(typedesc.superType =='uima.cas.TOP'):
-                    if('DocumentMetaData' in domain):
-                        anewFs =  cas.createDocumentAnnotation(domain,len(cas.documentText),featureDict) 
+                    if 'DocumentMetaData' in domain:
+                        anewFs = cas.createDocumentAnnotation(domain, len(cas.documentText), featureDict, id=annotation_id)
+
                     else:
-                        anewFs=  cas.createAnnotation(domain,featureDict)
+                        anewFs = cas.createAnnotation(domain, featureDict, id=annotation_id)
                     cas.addToIndex(anewFs)
                 else:
                     anewFs=  cas.createFS(domain,featureDict)
